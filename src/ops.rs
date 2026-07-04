@@ -312,7 +312,11 @@ pub struct UpdateTodo {
 }
 
 fn none_clears(value: &str) -> &str {
-    if value.eq_ignore_ascii_case("none") { "" } else { value }
+    if value.eq_ignore_ascii_case("none") {
+        ""
+    } else {
+        value
+    }
 }
 
 pub async fn update_todo(args: UpdateTodo, auth_token: Option<&str>) -> Result<ActionResult> {
@@ -525,7 +529,11 @@ pub async fn move_project_to_area(
     let id = resolve_project_id(None, Some(project)).await?;
     url_scheme::open(
         "update-project",
-        &[("id", id.as_str()), ("auth-token", token.as_str()), ("area", area)],
+        &[
+            ("id", id.as_str()),
+            ("auth-token", token.as_str()),
+            ("area", area),
+        ],
     )
     .await?;
     Ok(ActionResult {
@@ -546,10 +554,72 @@ pub async fn remove_project_from_area(project: &str) -> Result<ActionResult> {
     })
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn none_clears_maps_none_keyword_to_empty() {
+        assert_eq!(none_clears("none"), "");
+        assert_eq!(none_clears("NONE"), "");
+        assert_eq!(none_clears("2026-07-10"), "2026-07-10");
+    }
+
+    #[test]
+    fn todo_from_fields_maps_columns() {
+        let fields: Vec<String> = [
+            "id1",
+            "Buy milk",
+            "open",
+            "",
+            "2026-07-10",
+            "errand",
+            "Groceries",
+            "",
+        ]
+        .iter()
+        .map(|s| s.to_string())
+        .collect();
+        let todo = todo_from_fields(&fields).unwrap();
+        assert_eq!(todo.id, "id1");
+        assert_eq!(todo.notes, None);
+        assert_eq!(todo.deadline.as_deref(), Some("2026-07-10"));
+        assert_eq!(todo.project.as_deref(), Some("Groceries"));
+        assert_eq!(todo.area, None);
+        assert_eq!(todo.list, None);
+    }
+
+    #[test]
+    fn todo_from_fields_rejects_short_records() {
+        assert!(
+            todo_from_fields(&[
+                "only".to_string(),
+                "three".to_string(),
+                "fields".to_string()
+            ])
+            .is_none()
+        );
+    }
+
+    #[test]
+    fn status_filter_matches() {
+        assert!(StatusFilter::Open.matches("open"));
+        assert!(!StatusFilter::Open.matches("completed"));
+        assert!(StatusFilter::All.matches("canceled"));
+    }
+}
+
 /// Open Things and navigate to a list, todo, or search query (things:///show).
 pub async fn show(target: &str) -> Result<ActionResult> {
     let builtin = [
-        "inbox", "today", "anytime", "upcoming", "someday", "logbook", "tomorrow", "deadlines",
+        "inbox",
+        "today",
+        "anytime",
+        "upcoming",
+        "someday",
+        "logbook",
+        "tomorrow",
+        "deadlines",
     ];
     let params: Vec<(&str, &str)> = if builtin.contains(&target.to_lowercase().as_str()) {
         vec![("id", target)]

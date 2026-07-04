@@ -83,7 +83,6 @@ pub async fn run(args: ServeArgs) -> Result<()> {
             None if loopback => None,
             None => Some((generate_token(), true)),
         }
-        .map(|(t, generated)| (t, generated))
     };
 
     let mut config = StreamableHttpServerConfig::default();
@@ -91,7 +90,11 @@ pub async fn run(args: ServeArgs) -> Result<()> {
         config = config.with_allowed_hosts(args.allowed_hosts.clone());
     } else if !loopback {
         // Allow the addresses clients will actually put in the Host header.
-        let mut hosts = vec!["localhost".to_string(), "127.0.0.1".to_string(), "::1".to_string()];
+        let mut hosts = vec![
+            "localhost".to_string(),
+            "127.0.0.1".to_string(),
+            "::1".to_string(),
+        ];
         if args.bind.is_unspecified() {
             // Can't know every interface address; rely on token auth instead.
             config = config.disable_allowed_hosts();
@@ -110,21 +113,19 @@ pub async fn run(args: ServeArgs) -> Result<()> {
     let mut mcp_router = Router::new().nest_service("/mcp", mcp_service);
     if let Some((token_value, _)) = &token {
         let expected = token_value.clone();
-        mcp_router = mcp_router.layer(middleware::from_fn(
-            move |req: Request, next: Next| {
-                let expected = expected.clone();
-                async move {
-                    if bearer_ok(&req, &expected) {
-                        next.run(req).await
-                    } else {
-                        Response::builder()
-                            .status(StatusCode::UNAUTHORIZED)
-                            .body(Body::from("Unauthorized"))
-                            .unwrap()
-                    }
+        mcp_router = mcp_router.layer(middleware::from_fn(move |req: Request, next: Next| {
+            let expected = expected.clone();
+            async move {
+                if bearer_ok(&req, &expected) {
+                    next.run(req).await
+                } else {
+                    Response::builder()
+                        .status(StatusCode::UNAUTHORIZED)
+                        .body(Body::from("Unauthorized"))
+                        .unwrap()
                 }
-            },
-        ));
+            }
+        }));
     }
 
     let app = Router::new()
@@ -172,9 +173,16 @@ fn print_banner(addr: SocketAddr, token: Option<&(String, bool)>) {
     eprintln!("      \"mcpServers\": {{");
     eprintln!("        \"things\": {{");
     eprintln!("          \"type\": \"http\",");
-    eprintln!("          \"url\": \"{url}\"{}", if token.is_some() { "," } else { "" });
+    eprintln!(
+        "          \"url\": \"{url}\"{}",
+        if token.is_some() { "," } else { "" }
+    );
     if let Some((t, generated)) = token {
-        let shown = if *generated { t.as_str() } else { "<your token>" };
+        let shown = if *generated {
+            t.as_str()
+        } else {
+            "<your token>"
+        };
         eprintln!("          \"headers\": {{ \"Authorization\": \"Bearer {shown}\" }}");
     }
     eprintln!("        }}");

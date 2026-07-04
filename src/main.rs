@@ -11,7 +11,11 @@ use clap::{Parser, Subcommand};
 use crate::types::{ActionResult, BuiltinList, ProjectItem, StatusFilter, TodoItem};
 
 #[derive(Parser)]
-#[command(name = "things-sak", version, about = "Things Swiss Army Knife — CLI and MCP server for Things 3")]
+#[command(
+    name = "things-sak",
+    version,
+    about = "Things Swiss Army Knife — CLI and MCP server for Things 3"
+)]
 struct Cli {
     /// Output results as JSON
     #[arg(long, global = true)]
@@ -19,7 +23,12 @@ struct Cli {
 
     /// Things URL scheme auth token (or set THINGS_SAK_AUTH_TOKEN).
     /// Required for update operations. Things → Settings → General → Enable Things URLs.
-    #[arg(long, global = true, env = "THINGS_SAK_AUTH_TOKEN", hide_env_values = true)]
+    #[arg(
+        long,
+        global = true,
+        env = "THINGS_SAK_AUTH_TOKEN",
+        hide_env_values = true
+    )]
     auth_token: Option<String>,
 
     #[command(subcommand)]
@@ -195,7 +204,16 @@ async fn run(cli: Cli) -> Result<()> {
     let token = cli.auth_token.as_deref();
 
     match cli.command {
-        Command::Add { title, notes, when, deadline, tags, list, heading, checklist_items } => {
+        Command::Add {
+            title,
+            notes,
+            when,
+            deadline,
+            tags,
+            list,
+            heading,
+            checklist_items,
+        } => {
             let result = ops::create_todo(ops::CreateTodo {
                 title,
                 notes,
@@ -209,7 +227,11 @@ async fn run(cli: Cli) -> Result<()> {
             .await?;
             print_action(&result, json);
         }
-        Command::List { list, status, limit } => {
+        Command::List {
+            list,
+            status,
+            limit,
+        } => {
             let todos = ops::list_todos(list, status, limit).await?;
             print_todos(&todos, json);
         }
@@ -218,7 +240,16 @@ async fn run(cli: Cli) -> Result<()> {
             print_action(&result, json);
         }
         Command::Update {
-            name, id, title, notes, append_notes, when, deadline, tags, add_tags, list,
+            name,
+            id,
+            title,
+            notes,
+            append_notes,
+            when,
+            deadline,
+            tags,
+            add_tags,
+            list,
         } => {
             let result = ops::update_todo(
                 ops::UpdateTodo {
@@ -244,7 +275,11 @@ async fn run(cli: Cli) -> Result<()> {
             let todos = ops::search_todos(&query).await?;
             print_todos(&todos, json);
         }
-        Command::Move { destination, name, id } => {
+        Command::Move {
+            destination,
+            name,
+            id,
+        } => {
             let result = ops::move_todo(id, name, &destination, token).await?;
             print_action(&result, json);
         }
@@ -253,7 +288,15 @@ async fn run(cli: Cli) -> Result<()> {
             print_action(&result, json);
         }
         Command::Project(cmd) => match cmd {
-            ProjectCommand::Add { title, notes, area, when, deadline, tags, todos } => {
+            ProjectCommand::Add {
+                title,
+                notes,
+                area,
+                when,
+                deadline,
+                tags,
+                todos,
+            } => {
                 let result = ops::create_project(ops::CreateProject {
                     title,
                     notes,
