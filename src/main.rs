@@ -68,7 +68,7 @@ enum Command {
         list: BuiltinList,
         #[arg(short, long, value_enum, default_value = "open")]
         status: StatusFilter,
-        /// Maximum number of todos to fetch
+        /// Maximum number of todos to fetch (applied before the status filter)
         #[arg(long)]
         limit: Option<usize>,
     },
