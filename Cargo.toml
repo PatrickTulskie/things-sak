@@ -1,0 +1,19 @@
+[package]
+name = "things-sak"
+version = "0.1.0"
+edition = "2024"
+description = "Things Swiss Army Knife — CLI and MCP server for Things 3 on macOS"
+license = "MIT"
+
+[dependencies]
+anyhow = "1.0.103"
+axum = "0.8.9"
+clap = { version = "4.6.1", features = ["derive"] }
+percent-encoding = "2.3.2"
+rand = "0.10.2"
+rmcp = { version = "2.1.0", features = ["server", "transport-io", "transport-streamable-http-server"] }
+schemars = "1.2.1"
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0.150"
+subtle = "2.6.1"
+tokio = { version = "1.52.3", features = ["macros", "rt-multi-thread", "process", "net", "signal"] }
