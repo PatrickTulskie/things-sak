@@ -1,0 +1,259 @@
+# For configuration information, refer to the following CodeRabbit documentation:
+# https://docs.coderabbit.ai/getting-started/configure-coderabbit
+#
+# To view the full active repo configuration, add a PR comment:
+# `@coderabbit configuration`
+
+language: en-US
+tone_instructions: 'Adopt a concise, matter-of-fact style that gets straight to the point.'
+early_access: false
+enable_free_tier: false
+
+reviews:
+  profile: chill
+  request_changes_workflow: true
+  high_level_summary: false
+  high_level_summary_placeholder: '@coderabbitai summary'
+  high_level_summary_in_walkthrough: false
+  auto_title_placeholder: '@coderabbitai'
+  auto_title_instructions: ''
+  review_status: false
+  commit_status: true
+  fail_commit_status: false
+  collapse_walkthrough: false
+  changed_files_summary: false
+  sequence_diagrams: false
+  estimate_code_review_effort: false
+  assess_linked_issues: true
+  related_issues: false
+  related_prs: false
+  suggested_labels: false
+  auto_apply_labels: false
+  suggested_reviewers: false
+  auto_assign_reviewers: false
+  poem: false
+  labeling_instructions: []
+  path_filters: []
+  path_instructions:
+    - path: '**'
+      instructions: >
+        Enforce the coding conventions listed below on all PRs.
+        For each violation, start your comment with: "Breaking Conventions: <description of issue>"
+
+        ## Scope and Focus
+        - Be conservative in suggestions and stay within the scope of the linked issue and PR description.
+        - Do not suggest changes that expand beyond the stated purpose of the PR.
+        - Prefer small, boring, reviewable changes over clever abstractions.
+
+        ## Rust Style and Quality
+        - Code must be formatted with `cargo fmt` and pass `cargo clippy --all-targets --all-features` without new warnings.
+        - Prefer explicit error context with `anyhow::Context` at process, I/O, AppleScript, and network boundaries.
+        - Avoid `unwrap`, `expect`, and `panic!` in production code unless the invariant is local, obvious, and documented.
+        - Keep public CLI and MCP behavior backward-compatible unless the PR explicitly documents a breaking change.
+        - All new files must end with exactly one trailing newline.
+        - Style consistency takes priority over individual preference.
+
+        ## Things 3 Integration
+        - Reads should remain read-only AppleScript queries through `osascript`.
+        - Writes should use the official Things URL scheme where it supports the operation.
+        - Direct access to Things' database is not allowed.
+        - Operations that modify existing todos or projects must preserve the auth-token requirements documented in `README.md`.
+        - Do not expose auth tokens in URLs, logs, errors, examples, or committed files.
+
+        ## MCP and HTTP Server
+        - Non-loopback HTTP binds must require Bearer token authentication unless the existing safety checks are deliberately changed and documented.
+        - Preserve Host header validation and avoid weakening DNS-rebinding protections.
+        - MCP tool schemas and JSON responses should stay stable and predictable for clients.
+        - Long-running server changes should handle shutdown signals cleanly.
+
+        ## Configuration and Environment
+        - Config changes must be committed and runnable without manually shared secrets.
+        - Config PRs must include documentation for any new environment variables or runtime requirements.
+        - macOS-specific setup belongs in `README.md` or `examples/macos/`; agent or reviewer guidance belongs in `.coderabbit.yaml` or other repo-level guidance.
+
+        ## Documentation
+        - Setup and user-facing usage docs go in `README.md`.
+        - macOS launchd examples and operational notes go in `examples/macos/`.
+        - Documentation must distinguish local stdio MCP usage from streamable HTTP usage.
+
+        ## Pull Requests
+        - PRs must include:
+          - Clear description of purpose and implementation
+          - Flagged context or caveats
+          - Tests or a credible explanation when tests are not applicable
+          - Reasonable size for review
+
+    - path: 'src/**/*.rs'
+      instructions: >
+        ## Rust Source
+        - Keep command parsing, Things operations, AppleScript helpers, URL-scheme helpers, and MCP/server adapters separated by module responsibility.
+        - Prefer typed data structures over ad-hoc JSON construction except at serialization boundaries.
+        - Do not block Tokio worker threads with unnecessary synchronous work in server paths.
+        - User-controlled strings passed into AppleScript must be escaped through the existing quoting helper or an equivalent tested path.
+        - URL-scheme parameters must be percent-encoded; do not concatenate untrusted parameter values directly into URLs.
+
+    - path: 'src/*script*.rs'
+      instructions: >
+        ## AppleScript Safety
+        - AppleScript command generation must treat todo, project, area, and tag names as untrusted input.
+        - Prefer read-only AppleScript for queries and use official Things APIs for writes where available.
+        - Keep parsing logic covered by unit tests when record delimiters or fields change.
+
+    - path: 'src/url_scheme.rs'
+      instructions: >
+        ## URL Scheme Safety
+        - Preserve percent-encoding for every dynamic query parameter.
+        - Auth tokens must never be logged or surfaced in user-facing errors.
+        - Add or update tests for any new URL action or parameter encoding behavior.
+
+    - path: 'src/serve.rs'
+      instructions: >
+        ## HTTP Server Security
+        - Preserve Bearer-token enforcement for non-loopback binds.
+        - Preserve DNS-rebinding protections via Host header validation.
+        - Do not accept tokens in query strings.
+        - Avoid verbose errors that reveal configured tokens or host allowlists beyond what is needed to diagnose configuration.
+
+    - path: 'tests/**'
+      instructions: >
+        ## Testing
+        - Tests must verify behavior and safety boundaries, not private implementation details.
+        - Bake verification into the test suite; do not add throwaway runner scripts.
+        - Tests should not require a live Things 3 app unless explicitly marked or documented as integration tests.
+        - Debugging output such as `dbg!`, `println!`, or temporary tracing must not be committed.
+
+  abort_on_close: true
+  disable_cache: false
+  auto_review:
+    enabled: true
+    auto_incremental_review: true
+    ignore_title_keywords: []
+    labels: []
+    drafts: true
+    base_branches:
+      - main
+
+  finishing_touches:
+    docstrings:
+      enabled: false
+    unit_tests:
+      enabled: false
+
+  pre_merge_checks:
+    docstrings:
+      mode: off
+      threshold: 80
+    title:
+      mode: off
+      requirements: ''
+    description:
+      mode: off
+    issue_assessment:
+      mode: off
+
+  tools:
+    ast-grep:
+      rule_dirs: []
+      util_dirs: []
+      essential_rules: false
+      packages: []
+    shellcheck:
+      enabled: true
+    ruff:
+      enabled: false
+    markdownlint:
+      enabled: true
+    github-checks:
+      enabled: true
+      timeout_ms: 90000
+    languagetool:
+      enabled: true
+      enabled_rules: []
+      disabled_rules: []
+      enabled_categories: []
+      disabled_categories: []
+      enabled_only: false
+      level: default
+    biome:
+      enabled: false
+    hadolint:
+      enabled: false
+    swiftlint:
+      enabled: false
+    phpstan:
+      enabled: false
+      level: default
+    phpmd:
+      enabled: false
+    phpcs:
+      enabled: false
+    golangci-lint:
+      enabled: false
+    yamllint:
+      enabled: true
+    gitleaks:
+      enabled: true
+    checkov:
+      enabled: false
+    detekt:
+      enabled: false
+    eslint:
+      enabled: false
+    flake8:
+      enabled: false
+    rubocop:
+      enabled: false
+    buf:
+      enabled: false
+    regal:
+      enabled: false
+    actionlint:
+      enabled: true
+    pmd:
+      enabled: false
+    cppcheck:
+      enabled: false
+    semgrep:
+      enabled: true
+    circleci:
+      enabled: false
+    clippy:
+      enabled: true
+    sqlfluff:
+      enabled: false
+    prismaLint:
+      enabled: false
+    pylint:
+      enabled: false
+    oxc:
+      enabled: false
+    shopifyThemeCheck:
+      enabled: false
+    luacheck:
+      enabled: false
+    brakeman:
+      enabled: false
+    dotenvLint:
+      enabled: true
+    htmlhint:
+      enabled: false
+    checkmake:
+      enabled: false
+    osvScanner:
+      enabled: true
+
+chat:
+  art: false
+  auto_reply: true
+  integrations:
+    jira:
+      usage: disabled
+    linear:
+      usage: disabled
+
+knowledge_base:
+  opt_out: false
+  web_search:
+    enabled: false
+  code_guidelines:
+    enabled: true
