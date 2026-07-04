@@ -45,6 +45,41 @@ pub async fn open(command: &str, params: &[(&str, &str)]) -> Result<()> {
     Ok(())
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn build_url_encodes_params() {
+        let url = build_url(
+            "add",
+            &[
+                ("title", "Buy milk & eggs"),
+                ("notes", "line one\nline two"),
+            ],
+        );
+        assert_eq!(
+            url,
+            "things:///add?title=Buy%20milk%20%26%20eggs&notes=line%20one%0Aline%20two"
+        );
+    }
+
+    #[test]
+    fn build_url_without_params() {
+        assert_eq!(build_url("version", &[]), "things:///version");
+    }
+
+    #[test]
+    fn build_url_encodes_url_metacharacters() {
+        // Values cannot smuggle extra parameters or fragments into the URL.
+        let url = build_url("update", &[("id", "abc"), ("title", "x&completed=true#f")]);
+        assert_eq!(
+            url,
+            "things:///update?id=abc&title=x%26completed%3Dtrue%23f"
+        );
+    }
+}
+
 /// Auth token required by update/update-project commands.
 pub fn auth_token(flag: Option<&str>) -> Result<String> {
     if let Some(token) = flag {

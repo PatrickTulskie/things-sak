@@ -27,7 +27,9 @@ pub async fn run(script: &str) -> Result<String> {
         bail!("AppleScript error: {}", stderr.trim());
     }
 
-    Ok(String::from_utf8_lossy(&output.stdout).trim_end().to_string())
+    Ok(String::from_utf8_lossy(&output.stdout)
+        .trim_end()
+        .to_string())
 }
 
 /// Wrap a script body in a `tell application "Things3"` block.
@@ -53,5 +55,46 @@ pub fn parse_records(output: &str) -> Vec<Vec<String>> {
 
 /// Optional field helper: empty string becomes None.
 pub fn opt(s: &str) -> Option<String> {
-    if s.is_empty() { None } else { Some(s.to_string()) }
+    if s.is_empty() {
+        None
+    } else {
+        Some(s.to_string())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn quote_escapes_quotes_and_backslashes() {
+        assert_eq!(quote("plain"), "\"plain\"");
+        assert_eq!(quote(r#"say "hi""#), r#""say \"hi\"""#);
+        assert_eq!(quote(r"a\b"), r#""a\\b""#);
+        // Injection attempt: quotes cannot break out of the string literal.
+        assert_eq!(
+            quote(r#"" & (do shell script "true") & ""#),
+            r#""\" & (do shell script \"true\") & \"""#
+        );
+    }
+
+    #[test]
+    fn parse_records_splits_fields_and_records() {
+        let output = format!(
+            "id1{f}name one{f}open{r}id2{f}name\ntwo{f}completed{r}",
+            f = FIELD_SEP,
+            r = RECORD_SEP
+        );
+        let records = parse_records(&output);
+        assert_eq!(records.len(), 2);
+        assert_eq!(records[0], vec!["id1", "name one", "open"]);
+        // Newlines inside fields survive.
+        assert_eq!(records[1][1], "name\ntwo");
+    }
+
+    #[test]
+    fn parse_records_handles_empty_output() {
+        assert!(parse_records("").is_empty());
+        assert!(parse_records("\n").is_empty());
+    }
 }

@@ -19,8 +19,8 @@ pub struct ThingsServer {
 }
 
 fn ok_json<T: serde::Serialize>(value: &T) -> Result<CallToolResult, ErrorData> {
-    let text = serde_json::to_string(value)
-        .map_err(|e| ErrorData::internal_error(e.to_string(), None))?;
+    let text =
+        serde_json::to_string(value).map_err(|e| ErrorData::internal_error(e.to_string(), None))?;
     Ok(CallToolResult::success(vec![ContentBlock::text(text)]))
 }
 
@@ -111,9 +111,7 @@ impl ThingsServer {
         &self,
         Parameters(args): Parameters<ListTodosArgs>,
     ) -> Result<CallToolResult, ErrorData> {
-        respond!(
-            ops::list_todos(args.list, args.status.unwrap_or_default(), args.limit).await
-        )
+        respond!(ops::list_todos(args.list, args.status.unwrap_or_default(), args.limit).await)
     }
 
     #[tool(
@@ -195,8 +193,13 @@ impl ThingsServer {
         Parameters(args): Parameters<MoveTodoArgs>,
     ) -> Result<CallToolResult, ErrorData> {
         respond!(
-            ops::move_todo(args.id, args.name, &args.destination, self.auth_token.as_deref())
-                .await
+            ops::move_todo(
+                args.id,
+                args.name,
+                &args.destination,
+                self.auth_token.as_deref()
+            )
+            .await
         )
     }
 
@@ -222,8 +225,7 @@ impl ThingsServer {
         Parameters(args): Parameters<MoveProjectArgs>,
     ) -> Result<CallToolResult, ErrorData> {
         respond!(
-            ops::move_project_to_area(&args.project, &args.area, self.auth_token.as_deref())
-                .await
+            ops::move_project_to_area(&args.project, &args.area, self.auth_token.as_deref()).await
         )
     }
 

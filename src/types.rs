@@ -38,7 +38,18 @@ pub struct ActionResult {
     pub id: Option<String>,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize, schemars::JsonSchema, clap::ValueEnum)]
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Default,
+    Serialize,
+    Deserialize,
+    schemars::JsonSchema,
+    clap::ValueEnum,
+)]
 #[serde(rename_all = "lowercase")]
 pub enum StatusFilter {
     #[default]
@@ -59,7 +70,9 @@ impl StatusFilter {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, schemars::JsonSchema, clap::ValueEnum)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, schemars::JsonSchema, clap::ValueEnum,
+)]
 #[serde(rename_all = "lowercase")]
 pub enum BuiltinList {
     Inbox,
