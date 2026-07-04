@@ -43,7 +43,7 @@ pub struct ListTodosArgs {
     pub list: BuiltinList,
     /// Filter by status (default: open).
     pub status: Option<StatusFilter>,
-    /// Maximum number of todos to fetch (useful for logbook).
+    /// Maximum number of todos to fetch, applied before the status filter (useful for logbook).
     pub limit: Option<usize>,
 }
 
