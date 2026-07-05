@@ -88,12 +88,22 @@ Use this from another MCP client after replacing the host and token:
 ## Optional LaunchDaemon
 
 `com.example.things-sak.daemon.plist` is included as a reference for admins who
-need a system-level daemon. It expects a system install at `/usr/local/bin`, for
-example:
+need a system-level daemon. It expects a system install at `/usr/local/bin` and a
+system-scoped environment file at
+`/Library/Application Support/things-sak/things-sak.env`:
 
 ```sh
 sudo cargo install --root /usr/local things-sak
+sudo mkdir -p "/Library/Application Support/things-sak"
+sudo cp examples/macos/things-sak.env.example \
+  "/Library/Application Support/things-sak/things-sak.env"
+sudo chmod 600 "/Library/Application Support/things-sak/things-sak.env"
+sudo "$EDITOR" "/Library/Application Support/things-sak/things-sak.env"
 ```
+
+This is separate from the user-scoped
+`~/Library/Application Support/things-sak/things-sak.env` used by the
+LaunchAgent above.
 
 Prefer the LaunchAgent unless you know your Things AppleScript permissions and
 GUI-session access are configured correctly. Running as root is not a personality
