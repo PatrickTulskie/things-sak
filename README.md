@@ -92,6 +92,8 @@ Notes:
   server's environment.
 - No tunneling to the public internet is built in, on purpose. If you ever
   need remote access, put it behind a VPN (Tailscale/WireGuard).
+- macOS `launchd` examples for running the streamable HTTP server at login are
+  in [`examples/macos`](examples/macos/README.md).
 
 ## MCP tools
 
