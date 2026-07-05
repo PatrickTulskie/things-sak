@@ -1,6 +1,6 @@
 [package]
 name = "things-sak"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 description = "Things Swiss Army Knife — CLI and MCP server for Things 3 on macOS"
 license = "MIT"
