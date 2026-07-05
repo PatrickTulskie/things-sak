@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.example.things-sak.daemon</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/sh</string>
+    <string>-lc</string>
+    <string>mkdir -p /Library/Logs/things-sak; set -a; . /Library/Application\ Support/things-sak/things-sak.env; set +a; if [ -n "$THINGS_SAK_ALLOWED_HOST" ]; then set -- --allowed-host "$THINGS_SAK_ALLOWED_HOST"; else set --; fi; exec /usr/local/bin/things-sak serve --bind "${THINGS_SAK_BIND:-127.0.0.1}" --port "${THINGS_SAK_PORT:-32123}" "$@" &gt;&gt; /Library/Logs/things-sak/things-sak.out.log 2&gt;&gt; /Library/Logs/things-sak/things-sak.err.log</string>
+  </array>
+
+  <key>RunAtLoad</key>
+  <true/>
+
+  <key>KeepAlive</key>
+  <true/>
+
+  <key>WorkingDirectory</key>
+  <string>/tmp</string>
+
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+  </dict>
+</dict>
+</plist>
