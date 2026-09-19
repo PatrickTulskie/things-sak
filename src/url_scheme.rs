@@ -45,6 +45,21 @@ pub async fn open(command: &str, params: &[(&str, &str)]) -> Result<()> {
     Ok(())
 }
 
+/// Auth token required by update/update-project commands.
+pub fn auth_token(flag: Option<&str>) -> Result<String> {
+    if let Some(token) = flag {
+        return Ok(token.to_string());
+    }
+    match std::env::var(AUTH_TOKEN_ENV) {
+        Ok(token) if !token.is_empty() => Ok(token),
+        _ => bail!(
+            "updating existing items requires the Things auth token. \
+             Find it in Things → Settings → General → Enable Things URLs → Manage, \
+             then set {AUTH_TOKEN_ENV} or pass --auth-token."
+        ),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -77,20 +92,5 @@ mod tests {
             url,
             "things:///update?id=abc&title=x%26completed%3Dtrue%23f"
         );
-    }
-}
-
-/// Auth token required by update/update-project commands.
-pub fn auth_token(flag: Option<&str>) -> Result<String> {
-    if let Some(token) = flag {
-        return Ok(token.to_string());
-    }
-    match std::env::var(AUTH_TOKEN_ENV) {
-        Ok(token) if !token.is_empty() => Ok(token),
-        _ => bail!(
-            "updating existing items requires the Things auth token. \
-             Find it in Things → Settings → General → Enable Things URLs → Manage, \
-             then set {AUTH_TOKEN_ENV} or pass --auth-token."
-        ),
     }
 }
