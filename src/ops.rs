@@ -554,6 +554,29 @@ pub async fn remove_project_from_area(project: &str) -> Result<ActionResult> {
     })
 }
 
+pub async fn show(target: &str) -> Result<ActionResult> {
+    let builtin = [
+        "inbox",
+        "today",
+        "anytime",
+        "upcoming",
+        "someday",
+        "logbook",
+        "tomorrow",
+        "deadlines",
+    ];
+    let params: Vec<(&str, &str)> = if builtin.contains(&target.to_lowercase().as_str()) {
+        vec![("id", target)]
+    } else {
+        vec![("query", target)]
+    };
+    url_scheme::open("show", &params).await?;
+    Ok(ActionResult {
+        message: format!("Opened Things at: {target}"),
+        id: None,
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -607,28 +630,4 @@ mod tests {
         assert!(!StatusFilter::Open.matches("completed"));
         assert!(StatusFilter::All.matches("canceled"));
     }
-}
-
-/// Open Things and navigate to a list, todo, or search query (things:///show).
-pub async fn show(target: &str) -> Result<ActionResult> {
-    let builtin = [
-        "inbox",
-        "today",
-        "anytime",
-        "upcoming",
-        "someday",
-        "logbook",
-        "tomorrow",
-        "deadlines",
-    ];
-    let params: Vec<(&str, &str)> = if builtin.contains(&target.to_lowercase().as_str()) {
-        vec![("id", target)]
-    } else {
-        vec![("query", target)]
-    };
-    url_scheme::open("show", &params).await?;
-    Ok(ActionResult {
-        message: format!("Opened Things at: {target}"),
-        id: None,
-    })
 }
